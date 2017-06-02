@@ -2,11 +2,29 @@
 <html>
   <head>
     <title>MeadowLark Travel</title>
+    {{#if showTests}}
+      <link rel="stylesheet" href="/vendor/mocha.css" />
+    {{/if}}
   </head>
   <body>
     <header>
-      <img src="./img/logo.png" alt="MeadowLark Travel Logo" />
+      <img src="/img/logo.png" alt="MeadowLark Travel Logo" />
     </header>
     {{{body}}}
+    {{#if showTests}}
+      <div id="mocha">
+        <script type="text/javascript" src="/vendor/mocha.js"></script>
+        <script type="text/javascript" src="/vendor/chai.js"></script>
+        <script>
+          mocha.ui("tdd");
+          var assert = chai.assert;
+        </script>
+        <script type="text/javascript" src="/qa/tests-global.js"></script>
+        {{#if pageTestScript}}
+          <script type="text/javascript" src="{{pageTestScript}}"></script>
+        {{/if}}
+        <script>mocha.run();</script>
+    {{/if}}
+
   </body>
 </html>
