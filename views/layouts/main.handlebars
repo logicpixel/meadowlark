@@ -2,15 +2,21 @@
 <html>
   <head>
     <title>MeadowLark Travel</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     {{#if showTests}}
       <link rel="stylesheet" href="/vendor/mocha.css" />
     {{/if}}
   </head>
   <body>
     <header>
-      <img src="/img/logo.png" alt="MeadowLark Travel Logo" />
+      <img src="/img/logo.png" width="100" alt="MeadowLark Travel Logo" />
     </header>
     {{{body}}}
+    <script type="text/javascript" src="/vendor/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
+    {{{_sections.jquery}}}
     {{#if showTests}}
       <div id="mocha">
         <script type="text/javascript" src="/vendor/mocha.js"></script>
@@ -25,6 +31,5 @@
         {{/if}}
         <script>mocha.run();</script>
     {{/if}}
-
   </body>
 </html>
