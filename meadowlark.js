@@ -2,7 +2,18 @@ var express = require("express");
 var fortune = require("./lib/fortune");
 var formidable = require("formidable");
 var jqupload = require("jquery-file-upload-middleware");
+var credentials = require("./credentials");
 var app = express();
+//Cookies + Session
+app.use(require("cookie-parser")(credentials.cookieSecret));
+app.use(require("express-session")());
+
+app.use(function(req, res, next){
+  res.locals.flash = req.session.flash;
+  delete req.session.flash;
+  next();
+});
+
 app.use(require('body-parser')());
 //handlebars engine
 var handlebars = require("express-handlebars").create({
@@ -22,8 +33,10 @@ app.set("port", process.env.PORT || 3000);
 app.listen(app.get("port"), function(){
   console.log("Express started on http://localhost:" + app.get("port") + "; press CRTL+C to terminate.");
 });
+
 //Routes
 app.use(express.static(__dirname + "/public"));
+
 //QA tools
 app.use(function(req, res, next){
   res.locals.showTests = app.get("env") !== 'production' && req.query.test === "1";
@@ -64,6 +77,55 @@ app.get("/newsletter", function(req, res){
     csrf: "MY CSRF TOKEN"
   });
 });
+app.get("/newsletter/signup", function(req, res){
+  res.render("newsletter/archive");
+});
+
+function NewsletterSignup(){
+
+}
+NewsletterSignup.prototype.save = function(cb){
+  cb();
+};
+
+app.post("/newsletter", function(req, res){
+  var name = req.body.name || "";
+  var email = req.body.email || "";
+
+  if(!email.match(VALID_EMAIL_REGEX)){
+    if(req.xhr){
+      return res.json({error: 'Invalid Email Address'});
+    }
+    req.session.flash = {
+      type: "danger",
+      intro: "Validation Error",
+      message: "The email address entered is invalid"
+    };
+    return res.redirect(303, "/newsletter/archive");
+  }
+  new NewsletterSignup({name: name, email: email}).save(function(err){
+    if(err){
+      if(req.xhr){
+        return res.json({error: "Database error"});
+      }
+      req.session.flash = {
+        type: "danger",
+        intro: "Database Error",
+        message: "There was a database error; unable to save."
+      }
+      return res.redirect(303, "/newsletter/archive");
+    }
+    if(req.xhr){
+      return res.json({success: true});
+    }
+    req.session.flash = {
+      type: "success",
+      intro: "Thank You",
+      message: "You have been added to our newsletter"
+    };
+    return res.redirect(303, "/newsletter/archive");
+  });
+});
 app.post("/process", function(req, res){
   console.log("FORM FROM: " + req.query.form);
   console.log("CSRF TOKEN: " + req.body._csrf);
@@ -80,6 +142,8 @@ app.post("/process", function(req, res){
 });
 //Photo contest
 app.get("/contest/vacation-photo", function(req, res){
+  req.session.userName = "AABBCC";
+
   var now = new Date();
   res.render("contest/vacation-photo", {
     year: now.getFullYear(),
